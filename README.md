@@ -19,6 +19,68 @@ A FastAPI-based CRUD application designed for travelers to plan their trips and 
 
 ---
 
+## API Endpoints Reference
+
+| Category | Method | Endpoint | Description |
+| :--- | :--- | :--- | :--- |
+| **Project** | `POST` | `/projects/` | Create a new travel project. |
+| **Project** | `GET` | `/projects/` | List all travel projects. |
+| **Project** | `GET` | `/projects/{id}` | Get a single travel project. |
+| **Project** | `PUT` | `/projects/{id}` | Update project info (Name, Description, Date). |
+| **Project** | `DELETE` | `/projects/{id}` | Remove a project (forbidden if any place is visited). |
+| **Place** | `POST` | `/projects/{id}/places/` | Add a new place to an existing project. |
+| **Place** | `GET` | `/projects/{id}/places/` | List all places within a specific project. |
+| **Place** | `GET` | `/projects/{id}/places/{place_id}` | Get details of a single place in a project. |
+| **Place** | `PATCH` | `/projects/{id}/places/{place_id}` | Update place notes or mark as visited. |
+
+---
+
+## Usage Examples
+
+### 1. Create a New Project
+
+**Request:** `POST /projects/`
+
+```json
+{
+  "name": "Trip to Chicago Art Museums",
+  "description": "A weekend exploring world-class art",
+  "start_date": "2026-05-15",
+  "places": [
+    { "external_id": 22, "notes": "Villa Pamphili view" }
+  ]
+}
+```
+
+### 2. Add a Place to a Project
+
+**Request:** `POST /projects/1/places/`
+
+```json
+{
+  "external_id": 16568,
+  "notes": "Ancient artifact collection"
+}
+```
+
+### 3. Mark a Place as Visited
+
+**Request:** `PATCH /projects/1/places/1?visited=true`
+*Optional: `note_update` can also be passed as a query parameter.*
+
+### 4. Update Project Info
+
+**Request:** `PUT /projects/1`
+
+```json
+{
+  "name": "Updated Trip Name",
+  "start_date": "2026-06-01"
+}
+```
+
+---
+
 ## Setup & Installation
 
 ### 1. Prerequisite: Install `uv`
@@ -27,85 +89,28 @@ If you don't have `uv` installed, follow the [official guide](https://github.com
 
 ### 2. Setup Environment
 
-Clone the repository and run the following command to create a virtual environment and install all dependencies:
 ```bash
 uv sync
 ```
 
 ### 3. Run the Application
 
-Start the development server:
 ```bash
 uv run uvicorn main:app --reload
 ```
-The API will be available at `http://127.0.0.1:8000`.
+Interactive docs: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
 ---
 
-## API Documentation
+## Business Rules
 
-FastAPI provides interactive documentation out of the box:
-
-- **Swagger UI**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) (Best for interactive testing)
-- **ReDoc**: [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)
-- **OpenAPI JSON**: `http://127.0.0.1:8000/openapi.json` (Import this into **Postman**)
-
----
-
-## Example Requests (cURL)
-
-### 1. Create a New Project
-
-```bash
-curl -X 'POST' 'http://127.0.0.1:8000/projects/' \
--H 'Content-Type: application/json' \
--d '{
-  "name": "Trip to Chicago Museums",
-  "description": "A weekend exploring the Art Institute",
-  "start_date": "2026-05-15",
-  "places": [
-    { "external_id": 22, "notes": "Check out the Villa Pamphili views" }
-  ]
-}'
-```
-
-### 2. Add a Place to an Existing Project
-
-```bash
-curl -X 'POST' 'http://127.0.0.1:8000/projects/1/places/' \
--H 'Content-Type: application/json' \
--d '{
-  "external_id": 16568,
-  "notes": "Must see this ancient artifact"
-}'
-```
-
-### 3. Mark a Place as Visited
-
-```bash
-curl -X 'PATCH' 'http://127.0.0.1:8000/projects/1/places/1?visited=true'
-```
-
-### 4. Update Project Info
-
-```bash
-curl -X 'PUT' 'http://127.0.0.1:8000/projects/1' \
--H 'Content-Type: application/json' \
--d '{"name": "Updated Trip Name"}'
-```
-
----
-
-## Business Rules & Constraints
-
-1. **API Validation**: Every `external_id` is validated against the [Art Institute of Chicago API](https://api.artic.edu/docs/). Invalid IDs will return a `400 Bad Request`.
-2. **Project Capacity**: A maximum of **10 places** can be added to any single project.
-3. **Uniqueness**: The same external place cannot be added to the same project more than once.
-4. **Deletion Protection**: A project **cannot be deleted** if any of its places are already marked as "visited".
-5. **Project Completion**: A project is automatically marked as `is_completed: true` only when **all** associated places have been marked as visited. Adding a new place or unmarking a place as visited will revert this status.
+1. **API Validation**: Every `external_id` is verified against the [Art Institute of Chicago API](https://api.artic.edu/docs/).
+2. **Project Capacity**: A maximum of **10 places** per project.
+3. **Uniqueness**: Duplicate `external_id` within the same project is forbidden.
+4. **Deletion Rule**: A project with **any** visited place cannot be deleted.
+5. **Auto-Completion**: Project status becomes `is_completed: true` only when **all** its places are visited.
 
 ---
 
 ## Database
-
-The application uses **SQLite** by default (`travel_plans.db`). No additional database setup is required. The tables are automatically created when the application starts for the first time.
+Uses **SQLite** (`travel_plans.db`). Tables are auto-created on the first run.
