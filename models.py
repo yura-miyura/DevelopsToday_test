@@ -4,6 +4,7 @@ from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from database import Base
 
+
 class Project(Base):
     __tablename__ = "projects"
 
@@ -17,6 +18,7 @@ class Project(Base):
     places: Mapped[List["Place"]] = relationship(
         back_populates="project", cascade="all, delete-orphan", lazy="selectin"
     )
+
 
 class Place(Base):
     __tablename__ = "places"
