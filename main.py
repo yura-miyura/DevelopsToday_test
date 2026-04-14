@@ -19,13 +19,11 @@ app = FastAPI()
 async def create_project(
     project_in: schemas.ProjectCreate, db: Session = Depends(get_db)
 ) -> models.Project:
-    # 1. Enforce max 10 places limit
     if len(project_in.places) > 10:
         raise HTTPException(
             status_code=400, detail="A project can have a maximum of 10 places."
         )
 
-    # 2. Check for duplicate external_ids in the request itself
     external_ids: List[int] = [p.external_id for p in project_in.places]
     if len(external_ids) != len(set(external_ids)):
         raise HTTPException(
@@ -33,7 +31,6 @@ async def create_project(
             detail="Duplicate external IDs are not allowed in a project.",
         )
 
-    # 3. Create Project
     new_project = models.Project(
         name=project_in.name,
         description=project_in.description,
@@ -42,7 +39,6 @@ async def create_project(
     db.add(new_project)
     db.flush()
 
-    # 4. Validate and Add Places
     for p in project_in.places:
         await services.validate_artwork_id(p.external_id)
         db_place = models.Place(**p.model_dump(), project_id=new_project.id)
@@ -123,7 +119,6 @@ async def add_place_to_project(
             status_code=400, detail="A project can have a maximum of 10 places."
         )
 
-    # Business Rule: Prevent adding same external place twice
     if any(p.external_id == place_in.external_id for p in project.places):
         raise HTTPException(
             status_code=400, detail="Place already exists in this project."
@@ -133,7 +128,6 @@ async def add_place_to_project(
     db_place = models.Place(**place_in.model_dump(), project_id=project_id)
     db.add(db_place)
 
-    # If a new place is added, the project might no longer be completed
     project.is_completed = False
 
     db.commit()
@@ -189,7 +183,6 @@ def update_place_status(
 
     db.commit()
 
-    # Business Rule: Project completed if all places visited, else not completed
     project = db.get(models.Project, project_id)
     project.is_completed = all(p.is_visited for p in project.places)
     db.commit()
