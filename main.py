@@ -128,6 +128,7 @@ async def add_place_to_project(
     db_place = models.Place(**place_in.model_dump(), project_id=project_id)
     db.add(db_place)
 
+    # If a new place is added, the project might no longer be completed
     project.is_completed = False
 
     db.commit()
@@ -183,6 +184,7 @@ def update_place_status(
 
     db.commit()
 
+    # Business Rule: Project completed if all places visited, else not completed
     project = db.get(models.Project, project_id)
     project.is_completed = all(p.is_visited for p in project.places)
     db.commit()

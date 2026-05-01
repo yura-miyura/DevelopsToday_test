@@ -45,22 +45,30 @@ A robust FastAPI-based CRUD application designed for travelers to plan their tri
 
 ## Setup & Installation
 
-### 1. Install uv
-If you don't have uv installed, run:
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
+### Local Setup (using uv)
 
-### 2. Install Dependencies
-```bash
-uv sync
-```
+1. **Install uv**:
+   ```bash
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+   ```
+2. **Install dependencies**:
+   ```bash
+   uv sync
+   ```
+3. **Run the application**:
+   ```bash
+   uv run uvicorn main:app --reload
+   ```
 
-### 3. Run the Application
-```bash
-uv run uvicorn main:app --reload
-```
-The API will be live at: http://127.0.0.1:8000
+### Docker Setup
+
+You can also run the application using Docker and Docker Compose:
+
+1. **Build and start the container**:
+   ```bash
+   docker-compose up --build
+   ```
+2. The API will be available at: http://localhost:8000
 
 ---
 

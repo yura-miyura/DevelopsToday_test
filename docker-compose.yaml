@@ -1,0 +1,9 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./travel_plans.db:/app/travel_plans.db
+    environment:
+      - PYTHONUNBUFFERED=1
